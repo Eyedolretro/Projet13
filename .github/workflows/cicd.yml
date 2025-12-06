@@ -46,7 +46,8 @@ jobs:
       # 7️⃣ Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/lettings:latest ./Python-OC-Lettings-FR
+          cd Python-OC-Lettings-FR
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/lettings:latest .
 
       # 8️⃣ Push Docker image sur GHCR
       - name: Push Docker image to GHCR
