@@ -1,0 +1,54 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Projet13
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+
+      - name: Clone Django project
+        run: |
+          git clone https://github.com/OpenClassrooms-Student-Center/Python-OC-Lettings-FR.git
+          cd Python-OC-Lettings-FR
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/lettings:latest ./Python-OC-Lettings-FR
+
+      - name: Push Docker image to GHCR
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        run: |
+          echo $GHCR_TOKEN | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          docker push ${{ secrets.DOCKER_USERNAME }}/lettings:latest
+
+      - name: Deploy on Oracle VM
+        uses: appleboy/ssh-action@v0.1.9
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKER_USERNAME }}/lettings:latest
+            docker stop lettings || true
+            docker rm lettings || true
+            docker run -d -p 8000:8000 --name lettings ${{ secrets.DOCKER_USERNAME }}/lettings:latest
