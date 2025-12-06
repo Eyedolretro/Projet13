@@ -10,36 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout du repo principal (Projet13)
+      # 1. Checkout repository
       - name: Checkout Projet13
         uses: actions/checkout@v3
 
-      # 2. Installer Docker et Python (déjà présent sur ubuntu-latest, mais sécurité)
+      # 2. Setup Python (utile si besoin de dépendances Python avant Docker)
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      # 3. Cloner le projet Django
-      - name: Clone Django project
-        run: |
-          git clone https://github.com/OpenClassrooms-Student-Center/Python-OC-Lettings-FR.git
-
-      # 4. Créer un environnement virtuel et installer les dépendances
+      # 3. Install Python dependencies (si nécessaires pour tests ou lint)
       - name: Install dependencies
         run: |
-          cd Python-OC-Lettings-FR
-          python -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          pip install -r Python-OC-Lettings-FR/requirements.txt
 
-      # 5. Build de l’image Docker
+      # 4. Build Docker image
       - name: Build Docker image
         run: |
-          docker build --progress=plain -t ${{ secrets.DOCKER_USERNAME }}/lettings:latest ./Python-OC-Lettings-FR
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/lettings:latest ./Python-OC-Lettings-FR
 
-      # 6. Login GHCR et push de l’image
+      # 5. Log in and push Docker image to GHCR
       - name: Push Docker image to GHCR
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
@@ -47,7 +39,7 @@ jobs:
           echo $GHCR_TOKEN | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
           docker push ${{ secrets.DOCKER_USERNAME }}/lettings:latest
 
-      # 7. Déploiement sur la VM Oracle
+      # 6. Deploy on Oracle VM
       - name: Deploy on Oracle VM
         uses: appleboy/ssh-action@v0.1.9
         with:
