@@ -36,7 +36,7 @@ jobs:
       # 5️⃣ Run tests avec pytest
       - name: Run tests
         run: |
-          export PYTHONPATH=$(pwd)
+          export PYTHONPATH=$PYTHONPATH:$(pwd)/src
           pytest -q
           PYTHONPATH=$(pwd) pytest -q
     
