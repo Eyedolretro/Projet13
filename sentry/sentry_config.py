@@ -1,8 +1,8 @@
-import os
-import sentry_sdk
-from sentry_sdk.integrations.logging import LoggingIntegration
-from dotenv import load_dotenv
 import logging
+from dotenv import load_dotenv
+from sentry_sdk.integrations.logging import LoggingIntegration
+import sentry_sdk
+import os
 
 # Charger les variables depuis .env
 load_dotenv()
@@ -22,7 +22,6 @@ sentry_sdk.init(
 
 print("✅ Sentry initialisé avec capture des exceptions et logs.")
 
-
 dsn = os.getenv("SENTRY_DSN")
 if not dsn:
     print("⚠️  Aucune clé SENTRY_DSN trouvée. Vérifie ton fichier .env")
@@ -34,3 +33,4 @@ else:
         traces_sample_rate=1.0,
     )
     print("✅ Sentry initialisé avec capture des exceptions et logs.")
+
