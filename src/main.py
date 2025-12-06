@@ -1,13 +1,18 @@
-from sentry.sentry_config import *
-import logging
+import os
+import sys
 
-print("Application démarrée 🚀")
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(ROOT)
 
-# Exemple de log normal
-logging.info("Ceci est un log d’information.")
 
-# Exemple de log d’erreur envoyé automatiquement à Sentry
-logging.error("Ceci est une erreur envoyée à Sentry.")
 
-# Exemple d’exception non gérée (sera aussi envoyée à Sentry)
-raise Exception("Erreur de test automatique pour Sentry")
+
+
+from sentry import sentry_config  # noqa: F401
+
+from src.app.core import run_application
+
+if __name__ == "__main__":
+    print("🚀 Application Projet13 démarrée")
+    run_application()
+

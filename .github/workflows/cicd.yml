@@ -10,37 +10,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Projet13
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install -r requirements.txt || true
 
-      - name: Clone Django project
-        run: |
-          git clone https://github.com/OpenClassrooms-Student-Center/Python-OC-Lettings-FR.git
-          cd Python-OC-Lettings-FR
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
-
+      # ----------------------
+      # BUILD DOCKER IMAGE
+      # ----------------------
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/lettings:latest ./Python-OC-Lettings-FR
+          docker build -t ghcr.io/eyedolretro/projet13:latest .
 
-      - name: Push Docker image to GHCR
+      # ----------------------
+      # PUSH TO GHCR
+      # ----------------------
+      - name: Push Docker image
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
-          echo $GHCR_TOKEN | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-          docker push ${{ secrets.DOCKER_USERNAME }}/lettings:latest
+          echo "${GHCR_TOKEN}" | docker login ghcr.io -u "Eyedolretro" --password-stdin
+          docker push ghcr.io/eyedolretro/projet13:latest
 
+      # ----------------------
+      # DEPLOY ON ORACLE VM
+      # ----------------------
       - name: Deploy on Oracle VM
         uses: appleboy/ssh-action@v0.1.9
         with:
@@ -48,7 +50,8 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/lettings:latest
-            docker stop lettings || true
-            docker rm lettings || true
-            docker run -d -p 8000:8000 --name lettings ${{ secrets.DOCKER_USERNAME }}/lettings:latest
+            docker login ghcr.io -u "Eyedolretro" -p "${{ secrets.GHCR_TOKEN }}"
+            docker pull ghcr.io/eyedolretro/projet13:latest
+            docker stop projet13 || true
+            docker rm projet13 || true
+            docker run -d -p 8000:8000 --name projet13 ghcr.io/eyedolretro/projet13:latest

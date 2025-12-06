@@ -1,3 +1,2 @@
-sentry-sdk
-sentry-sdk
+
 python-dotenv
