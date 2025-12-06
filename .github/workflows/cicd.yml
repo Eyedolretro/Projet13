@@ -26,6 +26,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest flake8
+          pip install pytest
 
       # 4️⃣ Linter Flake8
       - name: Lint with flake8
@@ -37,6 +38,7 @@ jobs:
         run: |
           export PYTHONPATH=$(pwd)
           pytest -q
+          PYTHONPATH=$(pwd) pytest -q
     
 
       # 6️⃣ Build Docker image
