@@ -26,27 +26,28 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest flake8
-          pip install pytest
 
       # 4️⃣ Linter Flake8
       - name: Lint with flake8
-        run: |
-          flake8 src/ sentry/
+        run: flake8 src/ sentry/
 
       # 5️⃣ Run tests avec pytest
       - name: Run tests
         run: |
-          export PYTHONPATH=$PYTHONPATH:$(pwd)/src
+          export PYTHONPATH=$(pwd)/src
           pytest -q
-          PYTHONPATH=$(pwd) pytest -q
-    
 
-      # 6️⃣ Build Docker image
+      # 6️⃣ Clone Django project pour Docker
+      - name: Clone Django project
+        run: |
+          git clone https://github.com/OpenClassrooms-Student-Center/Python-OC-Lettings-FR.git
+
+      # 7️⃣ Build Docker image
       - name: Build Docker image
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/lettings:latest ./Python-OC-Lettings-FR
 
-      # 7️⃣ Push Docker image sur GHCR
+      # 8️⃣ Push Docker image sur GHCR
       - name: Push Docker image to GHCR
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
@@ -54,7 +55,7 @@ jobs:
           echo $GHCR_TOKEN | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
           docker push ${{ secrets.DOCKER_USERNAME }}/lettings:latest
 
-      # 8️⃣ Déploiement sur Oracle VM via SSH
+      # 9️⃣ Déploiement sur Oracle VM via SSH
       - name: Deploy on Oracle VM
         uses: appleboy/ssh-action@v0.1.9
         with:
@@ -66,14 +67,3 @@ jobs:
             docker stop lettings || true
             docker rm lettings || true
             docker run -d -p 8000:8000 --name lettings ${{ secrets.DOCKER_USERNAME }}/lettings:latest
-
-    
-      # Cloner
-      - name: Clone Django project
-        run: |
-         git clone https://github.com/OpenClassrooms-Student-Center/Python-OC-Lettings-FR.git
-
-      - name: Build Docker image
-        run: |
-         docker build -t ${{ secrets.DOCKER_USERNAME }}/lettings:latest ./Python-OC-Lettings-FR
-
