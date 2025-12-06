@@ -35,7 +35,9 @@ jobs:
       # 5️⃣ Run tests avec pytest
       - name: Run tests
         run: |
+          export PYTHONPATH=$(pwd)
           pytest -q
+    
 
       # 6️⃣ Build Docker image
       - name: Build Docker image
