@@ -66,3 +66,14 @@ jobs:
             docker stop lettings || true
             docker rm lettings || true
             docker run -d -p 8000:8000 --name lettings ${{ secrets.DOCKER_USERNAME }}/lettings:latest
+
+    
+      # Cloner
+      - name: Clone Django project
+        run: |
+         git clone https://github.com/OpenClassrooms-Student-Center/Python-OC-Lettings-FR.git
+
+      - name: Build Docker image
+        run: |
+         docker build -t ${{ secrets.DOCKER_USERNAME }}/lettings:latest ./Python-OC-Lettings-FR
+
