@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout du repo
+      # 1️⃣ Checkout du repo Projet13
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      # 3️⃣ Install dependencies + pytest + flake8
+      # 3️⃣ Installer dépendances + pytest + flake8
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -43,13 +43,18 @@ jobs:
         run: |
           git clone https://github.com/OpenClassrooms-Student-Center/Python-OC-Lettings-FR.git
 
-      # 7️⃣ Build Docker image
+      # 7️⃣ Copier Dockerfile dans le projet cloné
+      - name: Copy Dockerfile
+        run: |
+          cp Dockerfile Python-OC-Lettings-FR/
+
+      # 8️⃣ Build Docker image
       - name: Build Docker image
         run: |
           cd Python-OC-Lettings-FR
           docker build -t ${{ secrets.DOCKER_USERNAME }}/lettings:latest .
 
-      # 8️⃣ Push Docker image sur GHCR
+      # 9️⃣ Push Docker image sur GHCR
       - name: Push Docker image to GHCR
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
@@ -57,7 +62,7 @@ jobs:
           echo $GHCR_TOKEN | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
           docker push ${{ secrets.DOCKER_USERNAME }}/lettings:latest
 
-      # 9️⃣ Déploiement sur Oracle VM via SSH
+      # 🔟 Déploiement sur Oracle VM via SSH
       - name: Deploy on Oracle VM
         uses: appleboy/ssh-action@v0.1.9
         with:
