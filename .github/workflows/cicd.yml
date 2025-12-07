@@ -9,59 +9,59 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    env:
+      # Transformer automatiquement le secret en minuscules
+      DOCKER_USERNAME_LC: ${{ secrets.DOCKER_USERNAME | lower }}
+
     steps:
-      # 1️⃣ Checkout repo
+      # 1️⃣ Récupération du repo
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Set up Python
+      # 2️⃣ Installer Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
-      # 3️⃣ Install dependencies
+      # 3️⃣ Install dependencies + pytest + flake8
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
           python -m pip install pytest flake8
 
-      # 4️⃣ Linter
+      # 4️⃣ Linter Flake8
       - name: Lint with flake8
         run: |
           python -m flake8 src/ sentry/
 
-      # 5️⃣ Tests
+      # 5️⃣ Run tests Pytest
       - name: Run tests
         run: |
           export PYTHONPATH=$(pwd)/src
           python -m pytest -q
 
-      # 6️⃣ Clone Django project
+      # 6️⃣ Clone projet Django (OC)
       - name: Clone Django project
         run: |
           git clone https://github.com/OpenClassrooms-Student-Center/Python-OC-Lettings-FR.git
 
-      # 7️⃣ Copier ton Dockerfile dans le projet
-      - name: Copy Dockerfile into cloned project
-        run: |
-          cp Dockerfile Python-OC-Lettings-FR/
-
-      # 8️⃣ Build Docker image
+      # 7️⃣ Build Docker image
       - name: Build Docker image
         run: |
-         cd Python-OC-Lettings-FR
-         docker build -t ghcr.io/$DOCKER_USERNAME_LC/lettings:latest .
+          cd Python-OC-Lettings-FR
+          docker build -t ghcr.io/${DOCKER_USERNAME_LC}/lettings:latest .
 
-
-      # 9️⃣ Push Docker image
+      # 8️⃣ Push Docker image vers GHCR
       - name: Push Docker image to GHCR
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
-          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u $DOCKER_USERNAME_LC --password-stdin
-          docker push ghcr.io/$DOCKER_USERNAME_LC/lettings:latest
+          echo $GHCR_TOKEN | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          docker push ghcr.io/${DOCKER_USERNAME_LC}/lettings:latest
 
-      # 🔟 Deploy on Oracle VM
+      # 9️⃣ Deploy sur Oracle VM
       - name: Deploy on Oracle VM
         uses: appleboy/ssh-action@v0.1.9
         with:
@@ -69,7 +69,7 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
-            docker pull ghcr.io/$DOCKER_USERNAME_LC/lettings:latest
+            docker pull ghcr.io/${DOCKER_USERNAME_LC}/lettings:latest
             docker stop lettings || true
             docker rm lettings || true
-            docker run -d -p 8000:8000 --name lettings ghcr.io/$DOCKER_USERNAME_LC/lettings:latest
+            docker run -d -p 8000:8000 --name lettings ghcr.io/${DOCKER_USERNAME_LC}/lettings:latest
