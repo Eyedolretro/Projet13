@@ -43,17 +43,17 @@ jobs:
         run: |
           git clone https://github.com/OpenClassrooms-Student-Center/Python-OC-Lettings-FR.git
 
-      # 7️⃣ Create lowercase Docker username
-      - name: Normalize DOCKER_USERNAME to lowercase
-        run: echo "DOCKER_USERNAME_LC=${DOCKER_USERNAME,,}" >> $GITHUB_ENV
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      # 7️⃣ Copier ton Dockerfile dans le projet
+      - name: Copy Dockerfile into cloned project
+        run: |
+          cp Dockerfile Python-OC-Lettings-FR/
 
       # 8️⃣ Build Docker image
       - name: Build Docker image
         run: |
-          cd Python-OC-Lettings-FR
-          docker build -t ghcr.io/$DOCKER_USERNAME_LC/lettings:latest .
+         cd Python-OC-Lettings-FR
+         docker build -t ghcr.io/$DOCKER_USERNAME_LC/lettings:latest .
+
 
       # 9️⃣ Push Docker image
       - name: Push Docker image to GHCR
