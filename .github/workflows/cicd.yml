@@ -52,13 +52,15 @@ jobs:
       - name: Build Docker image
         run: |
           cd Python-OC-Lettings-FR
-          docker build -t ghcr.io/${{ secrets.DOCKER_USERNAME }}/lettings:latest .
+          docker build -t ghcr.io/${{ secrets.DOCKER_USERNAME,, }}/lettings:latest .
+
 
       # 9️⃣ Push Docker image
       - name: Push Docker image to GHCR
         run: |
           echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-          docker push ghcr.io/${{ secrets.DOCKER_USERNAME }}/lettings:latest
+          docker push ghcr.io/${{ secrets.DOCKER_USERNAME,, }}/lettings:latest
+
 
       # 🔟 Deploy on Oracle VM
       - name: Deploy on Oracle VM
@@ -71,4 +73,5 @@ jobs:
             docker pull ghcr.io/${{ secrets.DOCKER_USERNAME }}/lettings:latest
             docker stop lettings || true
             docker rm lettings || true
-            docker run -d -p 8000:8000 --name lettings ghcr.io/${{ secrets.DOCKER_USERNAME }}/lettings:latest
+            docker run -d -p 8000:8000 --name lettings ghcr.io/${{ secrets.DOCKER_USERNAME,, }}/lettings:latest
+
