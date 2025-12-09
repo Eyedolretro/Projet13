@@ -33,8 +33,9 @@ jobs:
 
       - name: Run tests
         run: |
-          export PYTHONPATH=$(pwd)/src
-          python -m pytest -q
+            export PYTHONPATH=$(pwd)/src
+            python -m pytest -q
+  
 
       # ---------------------- DOCKER ----------------------
       - name: Build Docker image
