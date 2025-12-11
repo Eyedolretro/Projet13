@@ -14,21 +14,24 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install flake8
+            python -m pip install --upgrade pip setuptools wheel
+            python -m pip install -r requirements.txt
+            python -m pip install pytest flake8
 
       - name: Lint - flake8
         run: flake8 src/ sentry/
 
       - name: Run tests
-        run: pytest -q
+        run: |
+          export PYTHONPATH=$(pwd)/src
+          python -m pytest -q
+      
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -38,8 +41,24 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/projet13:latest .
-
-      - name: Push Docker image
+            USERLC=$(echo "${{ secrets.DOCKER_USERNAME }}" | tr '[:upper:]' '[:lower:]')
+            docker build -t ghcr.io/$USERLC/lettings:latest .
+        
+      - name: Push Docker image to GHCR
+        env:
+            GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/projet13:latest
+            USERLC=$(echo "${{ secrets.DOCKER_USERNAME }}" | tr '[:upper:]' '[:lower:]')
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+            docker push ghcr.io/$USERLC/lettings:latest
+        
+
+
+            This is a Tier 2 configuration:
+            https://docs.brew.sh/Support-Tiers#tier-2
+            You can report Tier 2 unrelated issues to Homebrew/* repositories!
+            Read the above document before opening any issues or PRs.
+          
+            ==> make native VERSION=2.0.1
+            xcode-select --install
+          
