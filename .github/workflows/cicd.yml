@@ -26,7 +26,6 @@ jobs:
 
       - name: Run tests
         run: |
-          export PYTHONPATH=$(pwd)/src
           pytest -q
 
       - name: Lint
